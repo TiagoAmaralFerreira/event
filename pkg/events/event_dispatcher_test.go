@@ -72,6 +72,46 @@ func (suite *EventDispatcherTestSuite) TestEventDispatcher_Register() {
 	assert.Equal(suite.T(), &suite.handler2, suite.eventDispatcher.handlers[suite.event.GetName()][1])
 }
 
+func (suite *EventDispatcherTestSuite) TestEventDispatcher_Register_WithSameHandler() {
+	err := suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler)
+	suite.Nil(err)
+	suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+
+	err = suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler)
+	suite.Equal(ErrHandlerAlreadyRegistered, err)
+	suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+}
+
+func (suite *EventDispatcherTestSuite) TestEventDispatcher_Clear() {
+	// Event 1
+	err := suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler)
+	suite.Nil(err)
+	suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+
+	err = suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler2)
+	suite.Nil(err)
+	suite.Equal(2, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+
+	// Event 2
+	err = suite.eventDispatcher.Register(suite.event2.GetName(), &suite.handler3)
+	suite.Nil(err)
+	suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event2.GetName()]))
+
+	suite.eventDispatcher.Clear()
+	suite.Equal(0, len(suite.eventDispatcher.handlers))
+}
+
+func (suite *EventDispatcherTestSuite) TestEventDispatcher_Has() {
+	// Event 1
+	err := suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler)
+	suite.Nil(err)
+	suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+
+	err = suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler2)
+	suite.Nil(err)
+	suite.Equal(2, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+}
+
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(EventDispatcherTestSuite))
 }
